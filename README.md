@@ -70,7 +70,7 @@ A fully-featured Todo List application with a beautiful, responsive frontend and
 
 1. **Clone or extract the project:**
    ```bash
-   cd storify_assignment
+   cd instorify_assignment
    ```
 
 2. **Install dependencies:**
@@ -117,7 +117,7 @@ You should see:
 npm test
 ```
 
-The test suite includes **50+ comprehensive tests** covering:
+The test suite includes **comprehensive tests** covering:
 - ✅ Creating todos (with validation)
 - ✅ Getting all todos (with filtering and search)
 - ✅ Getting specific todos by ID
@@ -423,7 +423,7 @@ Check if the server is running.
 ## 📁 Project Structure
 
 ```
-storify_assignment/
+instorify_assignment/
 ├── server.js              # Main server file with all API endpoints
 ├── package.json           # Project dependencies and scripts
 ├── todos.json            # Persistent storage (auto-generated)
