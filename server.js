@@ -351,7 +351,6 @@ const server = app.listen(PORT, () => {
 	console.log(`✅ Todo API server running on http://localhost:${PORT}`);
 	console.log(`📝 API endpoints available at http://localhost:${PORT}/todos`);
 	console.log(`🌐 Frontend UI available at http://localhost:${PORT}`);
-	console.log(`👥 Multi-user support enabled`);
 });
 
 // Graceful shutdown

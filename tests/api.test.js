@@ -121,7 +121,7 @@ async function runTests() {
 			completed: false,
 		});
 		assertEqual(response.statusCode, 201, "Status code should be 201");
-		assert(response.body.id, "Response should have an id");
+		assert(response.body.id >= 0, "Response should have an id");
 		assert(response.body.title === "Complete assignment", "Title should match");
 		assert(response.body.createdAt, "Should have createdAt timestamp");
 	});
