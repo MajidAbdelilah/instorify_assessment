@@ -5,6 +5,32 @@
 const API_BASE_URL = "http://localhost:3000";
 
 // ================================
+// User ID Management
+// ================================
+
+// Generate or retrieve user ID
+function getUserId() {
+	let userId = localStorage.getItem("userId");
+	if (!userId) {
+		// Generate unique user ID using timestamp + random string
+		userId = generateUserId();
+		localStorage.setItem("userId", userId);
+		console.log("🆔 New user ID generated:", userId);
+	}
+	return userId;
+}
+
+// Generate unique user ID
+function generateUserId() {
+	const timestamp = Date.now().toString(36);
+	const randomStr = Math.random().toString(36).substring(2, 15);
+	return `user_${timestamp}_${randomStr}`;
+}
+
+// Get the user ID on app load
+const USER_ID = getUserId();
+
+// ================================
 // State Management
 // ================================
 
@@ -97,7 +123,11 @@ async function fetchTodos(filter = null, search = null) {
 
 	const url = `${API_BASE_URL}/todos${params.toString() ? "?" + params.toString() : ""}`;
 
-	const response = await fetch(url);
+	const response = await fetch(url, {
+		headers: {
+			"X-User-Id": USER_ID,
+		},
+	});
 	if (!response.ok) {
 		throw new Error("Failed to fetch todos");
 	}
@@ -109,6 +139,7 @@ async function createTodo(title, priority) {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
+			"X-User-Id": USER_ID,
 		},
 		body: JSON.stringify({ title, priority }),
 	});
@@ -126,6 +157,7 @@ async function updateTodo(id, updates) {
 		method: "PUT",
 		headers: {
 			"Content-Type": "application/json",
+			"X-User-Id": USER_ID,
 		},
 		body: JSON.stringify(updates),
 	});
@@ -141,6 +173,9 @@ async function updateTodo(id, updates) {
 async function deleteTodo(id) {
 	const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
 		method: "DELETE",
+		headers: {
+			"X-User-Id": USER_ID,
+		},
 	});
 
 	if (!response.ok) {
@@ -152,7 +187,11 @@ async function deleteTodo(id) {
 }
 
 async function fetchStats() {
-	const response = await fetch(`${API_BASE_URL}/todos/stats`);
+	const response = await fetch(`${API_BASE_URL}/todos/stats`, {
+		headers: {
+			"X-User-Id": USER_ID,
+		},
+	});
 	if (!response.ok) {
 		throw new Error("Failed to fetch stats");
 	}
@@ -197,6 +236,7 @@ async function handleAddTodo(e) {
 
 async function handleToggleComplete(id, currentStatus) {
 	try {
+		console.log(`Toggling todo ${id} to ${!currentStatus}`);
 		await updateTodo(id, { completed: !currentStatus });
 		await Promise.all([loadTodos(), loadStats()]);
 		showToast(currentStatus ? "Todo marked as pending" : "Todo completed! ✅");

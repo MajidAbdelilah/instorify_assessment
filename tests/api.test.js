@@ -7,6 +7,9 @@ const http = require("http");
 let testsPassed = 0;
 let testsFailed = 0;
 
+// Generate a unique user ID for testing
+const TEST_USER_ID = `test_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+
 // Helper function to make HTTP requests with timeout and retry logic
 async function makeRequest(method, path, data = null, retries = 2) {
 	for (let attempt = 0; attempt <= retries; attempt++) {
@@ -20,6 +23,7 @@ async function makeRequest(method, path, data = null, retries = 2) {
 					headers: {
 						"Content-Type": "application/json",
 						Connection: "keep-alive",
+						"X-User-Id": TEST_USER_ID,
 					},
 					timeout: 10000, // 5 second timeout
 				};

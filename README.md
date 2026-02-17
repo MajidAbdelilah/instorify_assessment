@@ -30,6 +30,7 @@ A fully-featured Todo List application with a beautiful, responsive frontend and
 - ✅ Filter todos by status (all/pending/completed)
 - ✅ Input validation with meaningful error messages
 - ✅ Persistent storage (data saved to file)
+- ✅ **Multi-user support** - Each user gets their own unique ID and data
 
 ### Bonus Features
 - 🎨 Priority levels (low/medium/high) with visual indicators
@@ -41,6 +42,8 @@ A fully-featured Todo List application with a beautiful, responsive frontend and
 - 📱 Fully responsive design
 - 🎯 Toast notifications for user actions
 - ⚡ Loading states for better UX
+- 👥 Multi-user system with automatic user ID generation
+- 🔐 User data isolation (each user has separate data file)
 
 ## 🛠 Tech Stack
 
@@ -150,12 +153,41 @@ The test suite includes **comprehensive tests** covering:
 http://localhost:3000
 ```
 
+### Authentication
+All API endpoints (except `/health`) require a user ID to be provided in the request headers:
+
+**Header Required:**
+```
+X-User-Id: <your-unique-user-id>
+```
+
+**User ID Format:**
+- Alphanumeric characters, hyphens, and underscores
+- Between 8-64 characters
+- Example: `user_lrjx4k_8h3k2m9p`
+
+**Automatic Generation:**
+The frontend automatically generates a unique user ID on first visit and stores it in `localStorage`. This ID is included in all API requests.
+
+**Error Response without User ID:**
+```json
+{
+  "error": "User ID is required. Please provide X-User-Id header."
+}
+```
+
 ### Endpoints
 
 #### 1. Create a Todo
 **POST** `/todos`
 
 Create a new todo item.
+
+**Headers:**
+```
+X-User-Id: user_lrjx4k_8h3k2m9p
+Content-Type: application/json
+```
 
 **Request Body:**
 ```json
@@ -197,17 +229,22 @@ Create a new todo item.
 
 Retrieve all todos with optional filtering and search.
 
+**Headers:**
+```
+X-User-Id: user_lrjx4k_8h3k2m9p
+```
+
 **Query Parameters:**
 - `filter` (optional): Filter by status - `completed` or `pending`
 - `search` (optional): Search todos by title (case-insensitive)
 
 **Examples:**
 ```bash
-GET /todos
-GET /todos?filter=completed
-GET /todos?filter=pending
-GET /todos?search=groceries
-GET /todos?filter=pending&search=assignment
+curl -H "X-User-Id: user_123" http://localhost:3000/todos
+curl -H "X-User-Id: user_123" http://localhost:3000/todos?filter=completed
+curl -H "X-User-Id: user_123" http://localhost:3000/todos?filter=pending
+curl -H "X-User-Id: user_123" http://localhost:3000/todos?search=groceries
+curl -H "X-User-Id: user_123" http://localhost:3000/todos?filter=pending&search=assignment
 ```
 
 **Response:** `200 OK`
@@ -375,23 +412,29 @@ Check if the server is running.
 
 ### User Interface
 
-1. **Dashboard Statistics**
+1. **User Identity**
+   - Automatic unique user ID generation on first visit
+   - ID stored in browser's localStorage
+   - Persistent across sessions
+   - Each user sees only their own todos
+
+2. **Dashboard Statistics**
    - Total tasks count
    - Pending tasks count
    - Completed tasks count
    - Completion rate percentage
 
-2. **Add Todo Form**
+3. **Add Todo Form**
    - Text input for todo title
    - Priority selector (low/medium/high)
    - Add button with icon
 
-3. **Search & Filter**
+4. **Search & Filter**
    - Real-time search by title
    - Filter buttons: All, Pending, Completed
    - Debounced search for better performance
 
-4. **Todo List**
+5. **Todo List**
    - Each todo shows:
      - Checkbox for completion status
      - Title
@@ -404,17 +447,17 @@ Check if the server is running.
      - 🟡 Medium - Yellow
      - 🔴 High - Red
 
-5. **Dark Mode**
+6. **Dark Mode**
    - Toggle button in top-right corner
    - Smooth transitions between themes
    - Preference saved in localStorage
 
-6. **Responsive Design**
+7. **Responsive Design**
    - Works perfectly on desktop, tablet, and mobile
    - Adaptive layout
    - Touch-friendly buttons
 
-7. **User Feedback**
+8. **User Feedback**
    - Toast notifications for actions
    - Loading spinners during API calls
    - Error messages with auto-dismiss
@@ -423,10 +466,13 @@ Check if the server is running.
 ## 📁 Project Structure
 
 ```
-instorify_assignment/
+storify_assignment/
 ├── server.js              # Main server file with all API endpoints
 ├── package.json           # Project dependencies and scripts
-├── todos.json            # Persistent storage (auto-generated)
+├── user_data/             # User-specific data files (auto-generated)
+│   ├── todos_user_abc123.json    # User 1's todos
+│   ├── todos_user_xyz789.json    # User 2's todos
+│   └── ...                        # More user files
 ├── public/               # Frontend files
 │   ├── index.html        # Main HTML file
 │   ├── styles.css        # Complete CSS with dark mode
@@ -462,6 +508,7 @@ instorify_assignment/
 - Data persists between restarts
 - No database setup required
 - Perfect for a take-home assignment
+- User-specific JSON files for data isolation
 
 **REST API Design:**
 - Follows REST conventions
@@ -521,29 +568,39 @@ instorify_assignment/
 ### Challenge 1: Data Persistence
 **Problem:** Todos were lost on server restart.
 
-**Solution:** Implemented file-based storage using Node.js `fs` module. Todos are automatically saved to `todos.json` after every modification and loaded on server startup.
+**Solution:** Implemented file-based storage using Node.js `fs` module. Each user's todos are automatically saved to separate JSON files (e.g., `todos_user_123.json`) after every modification and loaded on demand.
 
-### Challenge 2: Real-time Search Performance
+### Challenge 2: Multi-User Support
+**Problem:** All users shared the same todo list.
+
+**Solution:** 
+- Frontend generates unique user ID on first visit and stores in localStorage
+- User ID sent with every API request via `X-User-Id` header
+- Backend creates separate JSON file for each user
+- In-memory cache per user for performance
+- Data completely isolated between users
+
+### Challenge 3: Real-time Search Performance
 **Problem:** Searching on every keystroke could cause too many API requests.
 
 **Solution:** Implemented debouncing (300ms delay) to wait for the user to finish typing before making the API call.
 
-### Challenge 3: Dark Mode State Persistence
+### Challenge 4: Dark Mode State Persistence
 **Problem:** Theme preference was lost on page reload.
 
 **Solution:** Used `localStorage` to save and restore the user's theme preference.
 
-### Challenge 4: Responsive Design Complexity
+### Challenge 5: Responsive Design Complexity
 **Problem:** Making the UI look good on all screen sizes.
 
 **Solution:** Used CSS Grid with `auto-fit` and media queries. Tested on multiple device sizes and adjusted breakpoints accordingly.
 
-### Challenge 5: Testing Without a Framework
+### Challenge 6: Testing Without a Framework
 **Problem:** No testing framework like Jest was specified.
 
 **Solution:** Built a simple custom test framework with describe/test/expect functions. It's lightweight and does everything we need.
 
-### Challenge 6: Smooth Animations
+### Challenge 7: Smooth Animations
 **Problem:** Adding/removing todos felt jarring.
 
 **Solution:** Used CSS animations with staggered delays (each todo animates slightly after the previous one). Added transitions for hover effects and theme changes.
