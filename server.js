@@ -54,7 +54,7 @@ function loadUserTodos(userId) {
 		}
 
 		// Create new user data
-		const userData = { todos: [], nextId: 1 };
+		const userData = { todos: [], nextId: 0 };
 		userDataCache.set(userId, userData);
 		return userData;
 	} catch (error) {
